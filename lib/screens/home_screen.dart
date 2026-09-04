@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallet_manager/providers/app_state.dart';
+import 'package:wallet_manager/screens/add_transaction_screen.dart';
 import 'package:wallet_manager/theme/app_colors.dart';
 import 'package:wallet_manager/theme/app_typography.dart';
 import 'package:wallet_manager/utlils/formatters.dart';
@@ -198,7 +199,12 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primaryNavy,
         onPressed: () {
-          // TODO: Navigate to Add Transaction screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddTransactionScreen(),
+            ),
+          );
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
@@ -208,7 +214,19 @@ class _HomeScreenState extends State<HomeScreen> {
           setState(() {
             _currentTab = index;
           });
-          // TODO: Handle navigation
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AddTransactionScreen(),
+              ),
+            ).then((_) {
+              setState(() {
+                _currentTab = 0;
+              });
+            });
+          }
+          // TODO: Handle other navigations
         },
         items: const [
           BottomNavigationBarItem(
