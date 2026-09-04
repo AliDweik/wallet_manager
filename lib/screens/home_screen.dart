@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:wallet_manager/providers/app_state.dart';
 import 'package:wallet_manager/screens/add_transaction_screen.dart';
+import 'package:wallet_manager/screens/settings_screen.dart';
 import 'package:wallet_manager/theme/app_colors.dart';
 import 'package:wallet_manager/theme/app_typography.dart';
 import 'package:wallet_manager/utlils/formatters.dart';
@@ -16,6 +17,7 @@ class HomeScreen extends StatefulWidget {
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
+
 class _HomeScreenState extends State<HomeScreen> {
   bool _isBalanceVisible = true;
   int _currentTab = 0;
@@ -199,35 +201,13 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: AppColors.primaryNavy,
         onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AddTransactionScreen(),
-            ),
-          );
+          _navigateToAddTransaction();
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentTab,
-        onTap: (index) {
-          setState(() {
-            _currentTab = index;
-          });
-          if (index == 1) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const AddTransactionScreen(),
-              ),
-            ).then((_) {
-              setState(() {
-                _currentTab = 0;
-              });
-            });
-          }
-          // TODO: Handle other navigations
-        },
+        onTap: _handleNavigation,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -252,5 +232,79 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  // Handle bottom navigation
+  void _handleNavigation(int index) {
+    switch (index) {
+      case 0: // Home
+        setState(() {
+          _currentTab = 0;
+        });
+        break;
+
+      case 1: // Add Transaction
+        _navigateToAddTransaction();
+        break;
+
+      case 2: // Settings
+        _navigateToSettings();
+        break;
+
+      case 3: // Archive
+        _showArchiveDialog();
+        break;
+    }
+  }
+
+  // Navigate to Add Transaction screen
+  void _navigateToAddTransaction() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddTransactionScreen(),
+      ),
+    );
+
+    // Return to home tab
+    if (mounted) {
+      setState(() {
+        _currentTab = 0;
+      });
+    }
+  }
+
+  // Navigate to Settings screen
+  void _navigateToSettings() async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const SettingsScreen(),
+      ),
+    );
+
+    // Return to home tab
+    if (mounted) {
+      setState(() {
+        _currentTab = 0;
+      });
+    }
+  }
+
+  // Show archive dialog (placeholder for now)
+  void _showArchiveDialog() {
+    // TODO: Implement archive dialog in next step
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Archive feature coming soon'),
+        backgroundColor: AppColors.primaryNavy,
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+
+    // Return to home tab
+    setState(() {
+      _currentTab = 0;
+    });
   }
 }
