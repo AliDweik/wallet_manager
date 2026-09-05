@@ -1,9 +1,8 @@
-
 import 'package:flutter/material.dart';
-import 'package:wallet_manager/models/transaction.dart';
-import 'package:wallet_manager/theme/app_colors.dart';
-import 'package:wallet_manager/theme/app_typography.dart';
 import 'package:wallet_manager/utlils/formatters.dart';
+import '../models/transaction.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_typography.dart';
 
 class TransactionTile extends StatelessWidget {
   final Transaction transaction;
@@ -25,7 +24,9 @@ class TransactionTile extends StatelessWidget {
         border: Border.all(color: AppColors.divider),
       ),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          // Arrow icon
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -44,12 +45,15 @@ class TransactionTile extends StatelessWidget {
           ),
           const SizedBox(width: 12),
 
+          // Transaction details
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   transaction.note ?? transaction.typeLabel,
+                  maxLines: 1, // Limit to 1 line
+                  overflow: TextOverflow.ellipsis, // Show ... if too long
                   style: AppTypography.cardTitle().copyWith(
                     fontSize: 14,
                   ),
@@ -62,6 +66,8 @@ class TransactionTile extends StatelessWidget {
               ],
             ),
           ),
+
+          const SizedBox(width: 12),
 
           // Amount
           Text(

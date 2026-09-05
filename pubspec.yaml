@@ -13,6 +13,8 @@ dependencies:
   provider: ^6.1.1
   path_provider: ^2.1.2
   intl: ^0.19.0
+  share_plus: ^10.0.2
+  flutter_launcher_icons: ^0.13.1
 
 
 dev_dependencies:
@@ -22,3 +24,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#1E3A8A"
+  remove_alpha_ios: true

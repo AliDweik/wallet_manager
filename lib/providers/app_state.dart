@@ -293,18 +293,38 @@ class AppState extends ChangeNotifier {
     if (_data == null) return;
 
     try {
+      print('🔄 Starting archive process...');
+      print('📊 Current data:');
+      print('  - Cash: ${_data!.cashBalance}');
+      print('  - Visa: ${_data!.visaBalance}');
+      print('  - Transactions: ${_data!.transactions.length}');
+      print('  - Savings: ${_data!.savings}');
+      print('  - Current Month: ${_data!.currentMonth}');
+
+      // Save current data to archive
       await _storageService.archiveCurrentMonth(_data!);
+      print('✅ Archive file created');
 
+      // Reset for new month
       _data!.resetForNewMonth();
+      print('🔄 Data reset for new month');
 
+      // Add salary to specified account
       _data!.addSalary();
+      print('💰 Salary added: ${_data!.salaryAmount} to ${_data!.salaryAccount}');
 
+      // Save the reset data as active data
       await _storageService.saveActiveData(_data!);
+      print('✅ New month data saved');
 
+      // Notify listeners to update UI
       notifyListeners();
+      print('📢 Listeners notified');
+
+      print('✅ Archive process complete');
     } catch (e) {
       _error = 'Failed to archive month: $e';
-      print('Archive error: $e');
+      print('❌ Archive error: $e');
       notifyListeners();
     }
   }

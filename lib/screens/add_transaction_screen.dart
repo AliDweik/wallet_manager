@@ -1,17 +1,21 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:wallet_manager/models/transaction.dart';
 import 'package:wallet_manager/providers/app_state.dart';
+import 'package:wallet_manager/models/transaction.dart';
 import 'package:wallet_manager/theme/app_colors.dart';
 import 'package:wallet_manager/theme/app_typography.dart';
-import 'package:wallet_manager/utlils/formatters.dart';
-import 'package:wallet_manager/widgets/account_selector.dart';
-import 'package:wallet_manager/widgets/amount_input.dart';
 import 'package:wallet_manager/widgets/type_toggle.dart';
+import 'package:wallet_manager/widgets/amount_input.dart';
+import 'package:wallet_manager/widgets/account_selector.dart';
+import 'package:wallet_manager/utlils/formatters.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key});
+  final bool isEmbedded; // Add this parameter
+
+  const AddTransactionScreen({
+    super.key,
+    this.isEmbedded = false, // Default to false (pushed route)
+  });
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -30,6 +34,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   @override
   void initState() {
     super.initState();
+    // Auto focus on amount field
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _amountFocusNode.requestFocus();
     });
@@ -59,6 +64,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
   }
 
   Future<void> _saveTransaction() async {
+    // Validate amount
     final amount = double.tryParse(_amountController.text);
     if (amount == null || amount <= 0) {
       setState(() {
@@ -67,19 +73,26 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       return;
     }
 
+    // Clear error
     setState(() {
       _errorMessage = '';
     });
 
+    // Clean the note text
+    final note = _noteController.text.trim();
+    final cleanedNote = _cleanNote(note);
+
+    // Save transaction
     final appState = context.read<AppState>();
     await appState.addTransaction(
       amount: amount,
       type: _selectedType,
       account: _selectedAccount,
       date: _selectedDate,
-      note: _noteController.text.isNotEmpty ? _noteController.text : null,
+      note: cleanedNote.isEmpty ? null : cleanedNote,
     );
 
+    // Show success message
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -93,9 +106,59 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
         ),
       );
 
-      // Navigate back
-      Navigator.pop(context);
+      // Navigate back ONLY if not embedded
+      if (!widget.isEmbedded) {
+        Navigator.pop(context);
+      } else {
+        // If embedded, clear the form for next transaction
+        _clearForm();
+      }
     }
+  }
+
+  void _clearForm() {
+    _amountController.clear();
+    _noteController.clear();
+    setState(() {
+      _selectedType = TransactionType.expense;
+      _selectedAccount = AccountType.cash;
+      _selectedDate = DateTime.now();
+      _errorMessage = '';
+    });
+    _amountFocusNode.requestFocus();
+  }
+
+  String _cleanNote(String note) {
+    if (note.isEmpty) return '';
+
+    // Split by lines
+    final lines = note.split('\n');
+
+    // Remove empty lines from the beginning
+    int startIndex = 0;
+    while (startIndex < lines.length && lines[startIndex].trim().isEmpty) {
+      startIndex++;
+    }
+
+    // Remove empty lines from the end
+    int endIndex = lines.length - 1;
+    while (endIndex >= startIndex && lines[endIndex].trim().isEmpty) {
+      endIndex--;
+    }
+
+    // If all lines are empty, return empty string
+    if (startIndex > endIndex) {
+      return '';
+    }
+
+    // Get the non-empty portion
+    final cleanedLines = lines.sublist(startIndex, endIndex + 1);
+
+    // Trim each line
+    final trimmedLines = cleanedLines.map((line) => line.trim()).toList();
+
+    // Join back with newlines
+    return trimmedLines.join('\n');
   }
 
   @override
@@ -104,18 +167,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
-      appBar: AppBar(
-        title: const Text('Add Transaction'),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Type toggle
             TypeToggle(
               selectedType: _selectedType,
               onTypeChanged: (type) {
@@ -126,6 +183,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 16),
 
+            // Amount input
             AmountInput(
               controller: _amountController,
               focusNode: _amountFocusNode,
@@ -151,6 +209,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
             const SizedBox(height: 24),
 
+            // Account selector
             AccountSelector(
               selectedAccount: _selectedAccount,
               cashBalance: appState.cashBalance,
@@ -163,6 +222,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 24),
 
+            // Date picker
             Text(
               'Date',
               style: AppTypography.cardTitle(),
@@ -179,7 +239,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.calendar_today,
                       size: 20,
                       color: AppColors.textMuted,
@@ -190,7 +250,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                       style: AppTypography.bodyText(),
                     ),
                     const Spacer(),
-                    const Icon(
+                    Icon(
                       Icons.chevron_right,
                       color: AppColors.textMuted,
                     ),
@@ -200,6 +260,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 24),
 
+            // Note field
             Text(
               'Note (Optional)',
               style: AppTypography.cardTitle(),
@@ -217,6 +278,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
             ),
             const SizedBox(height: 32),
 
+            // Save button
             ElevatedButton(
               onPressed: _saveTransaction,
               child: Row(
