@@ -6,6 +6,7 @@ import 'package:wallet_manager/screens/settings_screen.dart';
 import 'package:wallet_manager/theme/app_colors.dart';
 import 'package:wallet_manager/theme/app_typography.dart';
 import 'package:wallet_manager/utlils/formatters.dart';
+import 'package:wallet_manager/widgets/archive_dialog.dart';
 import 'package:wallet_manager/widgets/daily_limit_meter.dart';
 import 'package:wallet_manager/widgets/hero_balance_card.dart';
 import 'package:wallet_manager/widgets/sub_account_card.dart';
@@ -234,30 +235,28 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Handle bottom navigation
   void _handleNavigation(int index) {
     switch (index) {
-      case 0: // Home
+      case 0:
         setState(() {
           _currentTab = 0;
         });
         break;
 
-      case 1: // Add Transaction
+      case 1:
         _navigateToAddTransaction();
         break;
 
-      case 2: // Settings
+      case 2:
         _navigateToSettings();
         break;
 
-      case 3: // Archive
+      case 3:
         _showArchiveDialog();
         break;
     }
   }
 
-  // Navigate to Add Transaction screen
   void _navigateToAddTransaction() async {
     await Navigator.push(
       context,
@@ -266,7 +265,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
 
-    // Return to home tab
     if (mounted) {
       setState(() {
         _currentTab = 0;
@@ -274,7 +272,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Navigate to Settings screen
   void _navigateToSettings() async {
     await Navigator.push(
       context,
@@ -283,7 +280,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
 
-    // Return to home tab
     if (mounted) {
       setState(() {
         _currentTab = 0;
@@ -291,20 +287,51 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Show archive dialog (placeholder for now)
-  void _showArchiveDialog() {
-    // TODO: Implement archive dialog in next step
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Archive feature coming soon'),
-        backgroundColor: AppColors.primaryNavy,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  Future<void> _showArchiveDialog() async {
+    final confirmed = await showArchiveDialog(context);
 
-    // Return to home tab
-    setState(() {
-      _currentTab = 0;
-    });
+    if (confirmed == true) {
+      final appState = context.read<AppState>();
+
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      await appState.archiveCurrentMonth();
+
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'New month started successfully!',
+              style: AppTypography.bodyText().copyWith(color: Colors.white),
+            ),
+            backgroundColor: AppColors.incomeGreen,
+            behavior: SnackBarBehavior.floating,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+
+      if (mounted) {
+        setState(() {
+          _currentTab = 0;
+        });
+      }
+    } else {
+      if (mounted) {
+        setState(() {
+          _currentTab = 0;
+        });
+      }
+    }
   }
 }
