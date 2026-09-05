@@ -9,7 +9,12 @@ import 'package:wallet_manager/widgets/billing_tile.dart';
 import 'package:wallet_manager/widgets/section_card.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({super.key});
+  final bool isEmbedded;
+
+  const SettingsScreen({
+    super.key,
+    this.isEmbedded = false,
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -186,9 +191,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.surfaceBase,
-      appBar: AppBar(
-        title: const Text('Monthly Settings'),
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -261,6 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
                   if (appState.monthlyBillings.isEmpty)
                     Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
                         color: AppColors.surfaceBase,
